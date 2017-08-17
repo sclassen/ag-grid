@@ -13,7 +13,7 @@ export interface TextComparator {
 }
 
 export interface TextFormatter {
-    (from:string):string;
+    (from:any):string;
 }
 
 export interface INumberFilterParams extends IScalarFilterParams{
@@ -32,7 +32,7 @@ export class TextFilter extends ComparableBaseFilter <string, ITextFilterParams,
     private filterText: string;
     private comparator:TextComparator;
     private formatter:TextFormatter;
-    static DEFAULT_FORMATTER:TextFormatter = (from:string)=>{
+    static DEFAULT_FORMATTER:TextFormatter = (from:any)=>{
         if (from == null) return null;
         return from.toString().toLowerCase();
     };
@@ -111,7 +111,8 @@ export class TextFilter extends ComparableBaseFilter <string, ITextFilterParams,
             return true;
         }
         let value = this.filterParams.valueGetter(params.node);
-        if (!value) {
+        let valueFormatted:string = this.formatter(value);
+        if (!valueFormatted) {
             if (this.filter === BaseFilter.NOT_EQUAL || this.filter === BaseFilter.NOT_CONTAINS) {
                 // if there is no value, but the filter type was 'not equals',
                 // then it should pass, as a missing value is not equal whatever
@@ -123,7 +124,6 @@ export class TextFilter extends ComparableBaseFilter <string, ITextFilterParams,
                 return false;
             }
         }
-        let valueFormatted:string = this.formatter(value);
         return this.comparator (this.filter, valueFormatted, this.filterText);
     }
 
